@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Stream XOR CRUD App - Mode Tunggal</title>
+    <style>
+        /* --- General Styling --- */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef2f7; color: #333; }
+        .container { max-width: 1000px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+
+        /* --- Form Styling --- */
+        form { background: #f8f8f8; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #eee; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+
+        /* --- Button Styling --- */
+        .action-buttons { display: flex; gap: 8px; align-items: center; }
+        button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: background-color 0.2s; white-space: nowrap; }
+        
+        .btn-create { background-color: #2ecc71; color: white; }
+        .btn-create:hover { background-color: #27ae60; }
+        .btn-delete { background-color: #e74c3c; color: white; }
+        .btn-delete:hover { background-color: #c0392b; }
+        .btn-update { background-color: #f39c12; color: white; }
+        .btn-update:hover { background-color: #d35400; }
+
+        /* --- Toggle Switch Styling --- */
+        .toggle-container { 
+            display: flex; 
+            justify-content: flex-end; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 6px;
+        }
+        .toggle-link {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .toggle-link.active {
+            background-color: #3498db;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-link.inactive {
+            color: #555;
+            background-color: transparent;
+            border: 1px solid #bdc3c7;
+        }
+
+
+        /* --- Table Styling & Data Display --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+        th, td { border: 1px solid #ecf0f1; padding: 12px; text-align: left; font-size: 14px; }
+        th { background-color: #3498db; color: white; font-weight: 700; text-transform: uppercase; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Gaya untuk data yang ditampilkan */
+        .ciphertext-style { font-size: 0.9em; color: #7f8c8d; word-break: break-all; font-family: monospace; }
+        .plaintext-style { font-weight: 700; color: #16a085; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aplikasi CRUD Kriptografi Stream XOR</h1>
+
+        <h2>➕ Buat Data Baru (CREATE)</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="create">
+            <label for="username_create">Username:</label>
+            <input type="text" id="username_create" name="username" required>
+            
+            <label for="rahasia_create">Data Rahasia (Plaintext):</label>
+            <textarea id="rahasia_create" name="rahasia" rows="3" required></textarea>
+            
+            <button type="submit" class="btn-create">CREATE & Enkripsi</button>
+        </form>
+
+        <h2>📊 Data di Database (READ Mode Tunggal)</h2>
+        <div class="toggle-container">
+            Mode Tampilan: 
+            <a href="{{ url_for('index', view='plaintext') }}" 
+               class="toggle-link {{ 'active' if view_mode == 'plaintext' else 'inactive' }}">
+                Data Asli (Dekripsi)
+            </a>
+            <a href="{{ url_for('index', view='ciphertext') }}" 
+               class="toggle-link {{ 'active' if view_mode == 'ciphertext' else 'inactive' }}">
+                Data Terenkripsi (Ciphertext)
+            </a>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Data Rahasia ({{ 'Dekripsi' if view_mode == 'plaintext' else 'Ciphertext' }})</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td class="{{ user.data_style }}">{{ user.data_display }}</td>
+                    <td class="action-buttons">
+                        <form method="POST" style="margin: 0;">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ user.id }}">
+                            <button type="submit" class="btn-delete">Hapus</button>
+                        </form>
+                        
+                        <button class="btn-update" onclick="document.getElementById('update_id').value='{{ user.id }}'; 
+                                                            document.getElementById('update_username').value='{{ user.username }}'; 
+                                                            document.getElementById('update_rahasia').value='{{ user.original_plaintext }}'; 
+                                                            document.getElementById('update_section').scrollIntoView({ behavior: 'smooth' });">
+                            Update
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2 id="update_section">✏️ Perbarui Data (UPDATE)</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="update">
+            <label for="update_id">ID yang akan diupdate:</label>
+            <input type="text" id="update_id" name="id" readonly required>
+            
+            <label for="update_username">Username (Baca Saja):</label>
+            <input type="text" id="update_username" name="username" readonly>
+
+            <label for="update_rahasia">Data Rahasia BARU (Plaintext):</label>
+            <textarea id="update_rahasia" name="rahasia" rows="3" required></textarea>
+            
+            <button type="submit" class="btn-update">UPDATE & Enkripsi Ulang</button>
+        </form>
+    </div>
+</body>
+</html>

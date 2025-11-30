@@ -1,0 +1,11 @@
+DROP DATABASE IF EXISTS kripto_db;
+
+CREATE DATABASE kripto_db;
+
+USE kripto_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    data_rahasia VARBINARY(255) NOT NULL
+);

@@ -38,19 +38,3 @@ Kriptografi diimplementasikan sepenuhnya pada sisi aplikasi (Python/Flask).
 
 ```bash
 pip install -r requirements.txt
-
-#### 2. Setup Database
-Pastikan MySQL Server Anda berjalan.
-
-Jalankan skrip database_setup.sql di lingkungan MySQL Anda.
-
-Penting: Buka file app.py dan UBAH kredensial koneksi di dictionary DB_CONFIG agar sesuai dengan username dan password MySQL lokal Anda.
-
-#### 3. Menjalankan Server Flask
-Jalankan aplikasi dari terminal di folder proyek:
-
-Bash
-
-python app.py
-#### 4. Akses Aplikasi
-Akses alamat berikut di web browser Anda: http://127.0.0.1:5000

@@ -4,7 +4,6 @@ import mysql.connector
 
 app = Flask(__name__)
 
-# --- KRIPTOGRAFI SIMETRIS (STREAM XOR) ---
 SECRET_KEY = b"kunci_rahasia_untuk_tugas_kriptografi_123456789" 
 
 def stream_xor_encrypt_decrypt(data_bytes: bytes, key: bytes) -> bytes:
@@ -19,7 +18,6 @@ def decrypt_data(ciphertext_bytes: bytes) -> str:
     return decrypted_bytes.decode('utf-8')
 
 
-# --- KONFIGURASI DATABASE ---
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
@@ -34,8 +32,7 @@ def get_db_connection():
         print(f"Database Connection Error: {err}")
         return None
 
-# --- FUNGSI DATABASE HELPER ---
-# Fungsi ini sekarang menerima parameter view_mode
+
 def get_all_users(view_mode):
     conn = get_db_connection()
     if not conn: return []
@@ -50,33 +47,32 @@ def get_all_users(view_mode):
         display_data = ""
         data_style = ""
         
-        # Logika untuk menampilkan Plaintext atau Ciphertext
+
         if view_mode == 'plaintext':
             display_data = decrypt_data(cipher)
-            data_style = "plaintext-style" # Class CSS untuk data asli
-        else: # view_mode == 'ciphertext'
-            # Mengubah bytes menjadi string hex yang dapat ditampilkan
+            data_style = "plaintext-style" 
+        else: 
             display_data = cipher.hex()
-            data_style = "ciphertext-style" # Class CSS untuk data terenkripsi
+            data_style = "ciphertext-style" 
 
         users.append({
             'id': uid,
             'username': uname,
             'data_display': display_data,
             'data_style': data_style,
-            'original_plaintext': decrypt_data(cipher) # Tetap simpan plaintext untuk UPDATE
+            'original_plaintext': decrypt_data(cipher) 
         })
     return users
 
-# --- ROUTE FLASK (ANTARMUKA WEB) ---
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Mengambil status view mode dari query parameter (default: plaintext)
+    
     view_mode = request.args.get('view', 'plaintext')
 
     if request.method == 'POST':
         action = request.form.get('action')
-        # ... (Logika CREATE, UPDATE, DELETE sama seperti sebelumnya, tidak diubah) ...
+        
         username = request.form.get('username')
         rahasia = request.form.get('rahasia')
         user_id = request.form.get('id')
@@ -109,10 +105,10 @@ def index():
             cursor.close()
             conn.close()
         
-        # Setelah POST, kembali ke halaman utama, mempertahankan view mode saat ini
+       
         return redirect(url_for('index', view=view_mode))
 
-    # Jika method GET: Mengambil data berdasarkan view_mode
+    
     users = get_all_users(view_mode)
     return render_template('index.html', users=users, view_mode=view_mode)
 
